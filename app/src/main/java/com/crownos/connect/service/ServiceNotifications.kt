@@ -13,6 +13,7 @@ import com.crownos.connect.ui.kit.CrownIcons
 object ServiceNotifications {
     const val CONNECTION_ID = 1
     const val PAIRING_ID = 2
+    private const val PROMPT_ID = 3
     private const val CONNECTION_CHANNEL = "connection"
     const val ALERT_CHANNEL = "alerts"
 
@@ -56,6 +57,19 @@ object ServiceNotifications {
             .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
             .setContentIntent(openAppIntent(context))
             .build()
+    }
+
+    fun prompt(context: Context, title: String, text: String, target: Intent) {
+        val intent = PendingIntent.getActivity(context, PROMPT_ID, target, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
+        val notification = NotificationCompat.Builder(context, ALERT_CHANNEL)
+            .setSmallIcon(smallIcon)
+            .setContentTitle(title)
+            .setContentText(text)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setAutoCancel(true)
+            .setContentIntent(intent)
+            .build()
+        context.getSystemService(NotificationManager::class.java).notify(PROMPT_ID, notification)
     }
 
     fun pairingCode(context: Context, name: String, code: String): Notification =

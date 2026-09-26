@@ -45,6 +45,16 @@ fun DeviceScreen(deviceId: String, onBack: (() -> Unit)?, onForgotten: () -> Uni
     SettingsPage(current.name, current.deviceClass.icon, onBack = onBack) {
         failure?.let { CrownCallout(it.message, Tone.Warning) }
         StatusCard(current, viewModel.battery(states)?.let { "${it.percent}%${if (it.charging) ", charging" else ""}" })
+        if (current.connected) {
+            viewModel.media(states)?.let { NowPlayingCard(it, viewModel::send) }
+            LaptopControlsCard(
+                current.name,
+                viewModel.volume(states),
+                viewModel.hotspot(states),
+                Feature.Hotspot in current.available,
+                viewModel::send,
+            )
+        }
         FeaturesCard(current, viewModel::setFeature)
         SettingsCardTitled("Device") {
             SettingRow("Forget this device", description = "Unpairs it on both ends") {

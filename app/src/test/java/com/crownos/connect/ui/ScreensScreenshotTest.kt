@@ -10,6 +10,13 @@ import androidx.compose.ui.test.onRoot
 import com.crownos.connect.protocol.BatteryDocument
 import com.crownos.connect.protocol.DeviceClass
 import com.crownos.connect.protocol.Feature
+import com.crownos.connect.protocol.HotspotDocument
+import com.crownos.connect.protocol.MediaSessionDocument
+import com.crownos.connect.protocol.VolumeDocument
+import com.crownos.connect.ui.kit.CrownIcons
+import com.crownos.connect.ui.layout.SettingsPage
+import com.crownos.connect.ui.screens.device.LaptopControlsCard
+import com.crownos.connect.ui.screens.device.NowPlayingCard
 import com.crownos.connect.runtime.PairingCodeRequest
 import com.crownos.connect.runtime.PeerDevice
 import com.crownos.connect.ui.glass.LocalRootBackdrop
@@ -60,6 +67,23 @@ class ScreensScreenshotTest {
         }
         compose.mainClock.advanceTimeBy(1_000)
         compose.onRoot().captureRoboImage("build/screenshots/$name.png")
+    }
+
+    @Test
+    fun deviceControlsDark() {
+        compose.setContent {
+            CrownTheme(ThemeMode.Dark, CrownAccent.Purple) {
+                LayoutClassProvider {
+                    Box(Modifier.fillMaxSize().crownWindowBackground()) {
+                        SettingsPage("CrownBook", CrownIcons.Laptop) {
+                            NowPlayingCard(MediaSessionDocument("Music", "Midnight City", "M83", 95_000, 243_000, true)) {}
+                            LaptopControlsCard("CrownBook", VolumeDocument(40, false), HotspotDocument(true, "Crown 5G"), true) {}
+                        }
+                    }
+                }
+            }
+        }
+        compose.onRoot().captureRoboImage("build/screenshots/device_controls_dark.png")
     }
 
     @Test

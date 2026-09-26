@@ -5,6 +5,10 @@ import androidx.lifecycle.viewModelScope
 import com.crownos.connect.protocol.BatteryDocument
 import com.crownos.connect.protocol.Feature
 import com.crownos.connect.protocol.FeatureRequest
+import com.crownos.connect.protocol.HotspotDocument
+import com.crownos.connect.protocol.MediaSessionDocument
+import com.crownos.connect.protocol.PeerCommand
+import com.crownos.connect.protocol.VolumeDocument
 import com.crownos.connect.protocol.Topic
 import com.crownos.connect.protocol.decodeDocument
 import com.crownos.connect.runtime.DeviceRepository
@@ -46,13 +50,22 @@ class DeviceViewModel @AssistedInject constructor(
     fun battery(states: Map<Topic, JsonElement>): BatteryDocument? =
         BatteryDocument.serializer().decodeDocument(states[Topic.Battery])
 
+    fun media(states: Map<Topic, JsonElement>): MediaSessionDocument? =
+        MediaSessionDocument.serializer().decodeDocument(states[Topic.MediaSession])
+
+    fun volume(states: Map<Topic, JsonElement>): VolumeDocument? =
+        VolumeDocument.serializer().decodeDocument(states[Topic.Volume])
+
+    fun hotspot(states: Map<Topic, JsonElement>): HotspotDocument? =
+        HotspotDocument.serializer().decodeDocument(states[Topic.Hotspot])
+
+    fun send(command: PeerCommand) = runtime.sendCommand(deviceId, command.toJson())
+
     fun setFeature(feature: Feature, enabled: Boolean) = runtime.setFeature(deviceId, feature, enabled)
 
     fun startFeature(request: FeatureRequest) = runtime.startFeature(deviceId, request)
 
     fun stopFeature(feature: Feature) = runtime.stopFeature(deviceId, feature)
-
-    fun sendCommand(command: JsonElement) = runtime.sendCommand(deviceId, command)
 
     fun forget() = runtime.forget(deviceId)
 

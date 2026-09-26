@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">CrownConnect</string>
+    <string name="accessibility_description">Lets your paired CrownOS computer lock this phone, and tap, scroll and type on it while you share its screen or move the shared cursor onto it. CrownConnect reads nothing on screen for itself.</string>
+    <string name="notification_listener_label">CrownConnect notifications</string>
 </resources>

@@ -41,7 +41,11 @@ class ConnectionService : LifecycleService() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
-        if (intent?.action == ACTION_REFRESH_TYPES) promoteToForeground()
+        if (intent?.action == ACTION_REFRESH_TYPES) {
+            promoteToForeground()
+            features.stop()
+            features.start(lifecycleScope)
+        }
         return START_STICKY
     }
 
