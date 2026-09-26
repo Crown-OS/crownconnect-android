@@ -1,0 +1,70 @@
+package com.crownos.connect.ui.kit
+
+import com.composables.icons.lucide.R as Lucide
+
+object CrownIcons {
+    val Smartphone = Lucide.drawable.lucide_ic_smartphone
+    val Laptop = Lucide.drawable.lucide_ic_laptop
+    val Monitor = Lucide.drawable.lucide_ic_monitor
+    val MonitorSmartphone = Lucide.drawable.lucide_ic_monitor_smartphone
+    val Cast = Lucide.drawable.lucide_ic_cast
+    val ScreenShare = Lucide.drawable.lucide_ic_screen_share
+    val Video = Lucide.drawable.lucide_ic_video
+    val Webcam = Lucide.drawable.lucide_ic_webcam
+    val Mic = Lucide.drawable.lucide_ic_mic
+    val MousePointer2 = Lucide.drawable.lucide_ic_mouse_pointer_2
+    val Clipboard = Lucide.drawable.lucide_ic_clipboard
+    val Bell = Lucide.drawable.lucide_ic_bell
+    val BatteryFull = Lucide.drawable.lucide_ic_battery_full
+    val BatteryCharging = Lucide.drawable.lucide_ic_battery_charging
+    val Wifi = Lucide.drawable.lucide_ic_wifi
+    val Bluetooth = Lucide.drawable.lucide_ic_bluetooth
+    val Phone = Lucide.drawable.lucide_ic_phone
+    val PhoneIncoming = Lucide.drawable.lucide_ic_phone_incoming
+    val PhoneOff = Lucide.drawable.lucide_ic_phone_off
+    val RadioTower = Lucide.drawable.lucide_ic_radio_tower
+    val Folder = Lucide.drawable.lucide_ic_folder
+    val FileDown = Lucide.drawable.lucide_ic_file_down
+    val Settings = Lucide.drawable.lucide_ic_settings
+    val Palette = Lucide.drawable.lucide_ic_palette
+    val ShieldCheck = Lucide.drawable.lucide_ic_shield_check
+    val Lock = Lucide.drawable.lucide_ic_lock
+    val Volume2 = Lucide.drawable.lucide_ic_volume_2
+    val VolumeX = Lucide.drawable.lucide_ic_volume_x
+    val Play = Lucide.drawable.lucide_ic_play
+    val Pause = Lucide.drawable.lucide_ic_pause
+    val SkipBack = Lucide.drawable.lucide_ic_skip_back
+    val SkipForward = Lucide.drawable.lucide_ic_skip_forward
+    val ChevronRight = Lucide.drawable.lucide_ic_chevron_right
+    val ChevronDown = Lucide.drawable.lucide_ic_chevron_down
+    val ChevronLeft = Lucide.drawable.lucide_ic_chevron_left
+    val Check = Lucide.drawable.lucide_ic_check
+    val X = Lucide.drawable.lucide_ic_x
+    val Plus = Lucide.drawable.lucide_ic_plus
+    val QrCode = Lucide.drawable.lucide_ic_qr_code
+    val ScanLine = Lucide.drawable.lucide_ic_scan_line
+    val ScanQrCode = Lucide.drawable.lucide_ic_scan_qr_code
+    val Link = Lucide.drawable.lucide_ic_link
+    val Unlink = Lucide.drawable.lucide_ic_unlink
+    val Trash2 = Lucide.drawable.lucide_ic_trash_2
+    val Info = Lucide.drawable.lucide_ic_info
+    val CircleCheck = Lucide.drawable.lucide_ic_circle_check
+    val TriangleAlert = Lucide.drawable.lucide_ic_triangle_alert
+    val OctagonAlert = Lucide.drawable.lucide_ic_octagon_alert
+    val Search = Lucide.drawable.lucide_ic_search
+    val Keyboard = Lucide.drawable.lucide_ic_keyboard
+    val Sun = Lucide.drawable.lucide_ic_sun
+    val Moon = Lucide.drawable.lucide_ic_moon
+    val RefreshCw = Lucide.drawable.lucide_ic_refresh_cw
+    val Power = Lucide.drawable.lucide_ic_power
+    val ArrowLeft = Lucide.drawable.lucide_ic_arrow_left
+    val Ellipsis = Lucide.drawable.lucide_ic_ellipsis
+    val Layers = Lucide.drawable.lucide_ic_layers
+    val Hand = Lucide.drawable.lucide_ic_hand
+    val KeyRound = Lucide.drawable.lucide_ic_key_round
+    val House = Lucide.drawable.lucide_ic_house
+    val Cpu = Lucide.drawable.lucide_ic_cpu
+    val Sparkles = Lucide.drawable.lucide_ic_sparkles
+    val TabletSmartphone = Lucide.drawable.lucide_ic_tablet_smartphone
+    val Cable = Lucide.drawable.lucide_ic_cable
+}
