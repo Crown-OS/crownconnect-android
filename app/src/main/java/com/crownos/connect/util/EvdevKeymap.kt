@@ -2,6 +2,8 @@ package com.crownos.connect.util
 
 import android.view.KeyEvent
 
+data class Keystroke(val code: Int, val shifted: Boolean)
+
 object EvdevKeymap {
     const val KEY_ESC = 1
     const val KEY_BACKSPACE = 14
@@ -103,7 +105,23 @@ object EvdevKeymap {
     )
     private const val SHIFTED_DIGITS = "!@#$%^&*()"
 
+    private val evdevByAndroid: Map<Int, Int> = keycodes.entries.associate { (evdev, android) -> android to evdev }
+
     fun androidKeycode(evdev: Int): Int? = keycodes[evdev]
+
+    fun evdevCode(androidKeycode: Int): Int? = evdevByAndroid[androidKeycode]
+
+    private val keystrokes: Map<Char, Keystroke> by lazy {
+        buildMap {
+            put('\n', Keystroke(KEY_ENTER, false))
+            put('\t', Keystroke(KEY_TAB, false))
+            for (shifted in listOf(true, false)) {
+                keycodes.keys.forEach { evdev -> character(evdev, shifted)?.let { put(it, Keystroke(evdev, shifted)) } }
+            }
+        }
+    }
+
+    fun keystrokeFor(character: Char): Keystroke? = keystrokes[character]
 
     fun isModifier(evdev: Int) = evdev in modifierMeta
 

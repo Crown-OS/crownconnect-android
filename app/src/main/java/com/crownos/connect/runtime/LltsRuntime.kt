@@ -47,6 +47,9 @@ class LltsRuntime @Inject constructor(
     private val eventFlow = MutableSharedFlow<LltsEvent>(extraBufferCapacity = EVENT_BUFFER)
     val events: SharedFlow<LltsEvent> = eventFlow.asSharedFlow()
 
+    private val inputFlow = MutableSharedFlow<LltsEvent>(extraBufferCapacity = EVENT_BUFFER)
+    val inputEvents: SharedFlow<LltsEvent> = inputFlow.asSharedFlow()
+
     private val statusFlow = MutableStateFlow<RuntimeStatus>(RuntimeStatus.Stopped)
     val status: StateFlow<RuntimeStatus> = statusFlow.asStateFlow()
 
@@ -94,7 +97,8 @@ class LltsRuntime @Inject constructor(
             is LltsEvent.Error -> Log.w(TAG, event.message)
             else -> Unit
         }
-        if (!eventFlow.tryEmit(event)) Log.w(TAG, "dropped ${event::class.simpleName}: event buffer full")
+        val bus = if (event is LltsEvent.Input || event is LltsEvent.InputKeys) inputFlow else eventFlow
+        if (!bus.tryEmit(event)) Log.w(TAG, "dropped ${event::class.simpleName}: event buffer full")
     }
 
     private fun startConfig() = StartConfig(

@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Build
 import android.provider.Settings
 import androidx.core.content.edit
+import com.crownos.connect.protocol.Edge
 import com.crownos.connect.protocol.enumByName
 import com.crownos.connect.ui.theme.CrownAccent
 import com.crownos.connect.ui.theme.ThemeMode
@@ -11,6 +12,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.updateAndGet
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -19,6 +21,8 @@ private const val KEY_DEVICE_NAME = "device_name"
 private const val KEY_THEME_MODE = "theme_mode"
 private const val KEY_ACCENT = "accent"
 private const val KEY_ONBOARDED = "onboarded"
+private const val KEY_COMPUTER_EDGES = "computer_edges"
+private const val EDGE_SEPARATOR = '='
 private const val MAX_NAME_LENGTH = 64
 
 @Singleton
@@ -42,6 +46,30 @@ class AppPreferences @Inject constructor(@ApplicationContext context: Context) {
 
     private val onboardedState = MutableStateFlow(preferences.getBoolean(KEY_ONBOARDED, false))
     val onboarded: StateFlow<Boolean> = onboardedState.asStateFlow()
+
+    private val computerEdgesState = MutableStateFlow(
+        preferences.getStringSet(KEY_COMPUTER_EDGES, null).orEmpty().mapNotNull { entry ->
+            val peer = entry.substringBefore(EDGE_SEPARATOR)
+            enumByName<Edge>(entry.substringAfter(EDGE_SEPARATOR, ""))?.let { peer to it }
+        }.toMap(),
+    )
+
+    /** The edge of this phone's screen that faces each computer. */
+    val computerEdges: StateFlow<Map<String, Edge>> = computerEdgesState.asStateFlow()
+
+    fun setComputerEdge(peer: String, edge: Edge) {
+        if (computerEdgesState.value[peer] == edge) return
+        saveComputerEdges(computerEdgesState.updateAndGet { it + (peer to edge) })
+    }
+
+    fun forgetComputer(peer: String) {
+        if (peer !in computerEdgesState.value) return
+        saveComputerEdges(computerEdgesState.updateAndGet { it - peer })
+    }
+
+    private fun saveComputerEdges(edges: Map<String, Edge>) = preferences.edit {
+        putStringSet(KEY_COMPUTER_EDGES, edges.map { (peer, edge) -> "$peer$EDGE_SEPARATOR${edge.name}" }.toSet())
+    }
 
     fun setDeviceName(name: String) {
         val trimmed = name.trim().take(MAX_NAME_LENGTH).ifEmpty { systemName }

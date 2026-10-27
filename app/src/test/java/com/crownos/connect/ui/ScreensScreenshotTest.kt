@@ -9,7 +9,13 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onRoot
 import com.crownos.connect.protocol.BatteryDocument
 import com.crownos.connect.protocol.DeviceClass
+import com.crownos.connect.media.MediaStream
+import com.crownos.connect.protocol.CameraLens
 import com.crownos.connect.protocol.Feature
+import com.crownos.connect.protocol.FeatureRequest
+import com.crownos.connect.protocol.MediaRole
+import com.crownos.connect.protocol.VideoLimits
+import com.crownos.connect.ui.screens.device.StreamingCard
 import com.crownos.connect.protocol.HotspotDocument
 import com.crownos.connect.protocol.MediaSessionDocument
 import com.crownos.connect.protocol.VolumeDocument
@@ -39,7 +45,7 @@ import org.robolectric.annotation.GraphicsMode
 
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
-@Config(application = Application::class, sdk = [35], qualifiers = "w411dp-h891dp-xxhdpi")
+@Config(application = Application::class, sdk = [35], qualifiers = "w411dp-h1100dp-xxhdpi")
 class ScreensScreenshotTest {
     @get:Rule
     val compose = createComposeRule()
@@ -76,6 +82,14 @@ class ScreensScreenshotTest {
                 LayoutClassProvider {
                     Box(Modifier.fillMaxSize().crownWindowBackground()) {
                         SettingsPage("CrownBook", CrownIcons.Laptop) {
+                            StreamingCard(
+                                devices[0],
+                                listOf(
+                                    MediaStream(devices[0].id, Feature.Camera, MediaRole.Encoder, 2, true, 1280, 720, 30, FeatureRequest.Camera(CameraLens.Front, VideoLimits(1280, 720, 30))),
+                                    MediaStream(devices[0].id, Feature.Monitor, MediaRole.Decoder, 3, true, 2560, 1600, 60, null),
+                                ),
+                                {}, {}, {}, {}, {},
+                            )
                             NowPlayingCard(MediaSessionDocument("Music", "Midnight City", "M83", 95_000, 243_000, true)) {}
                             LaptopControlsCard("CrownBook", VolumeDocument(40, false), HotspotDocument(true, "Crown 5G"), true) {}
                         }

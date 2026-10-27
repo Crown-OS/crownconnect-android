@@ -108,6 +108,11 @@ sealed interface LltsEvent {
     @SerialName("input")
     data class Input(val peer: String, val timeMs: Long, val events: List<JsonElement>) : LltsEvent
 
+    /** The peer sends a file over ffsp; `host` is where its ffsp listener waits, if known. */
+    @Serializable
+    @SerialName("fileOffer")
+    data class FileOffer(val peer: String, val transferId: Long, val host: String? = null) : LltsEvent
+
     /** Every key the peer holds down right now: release any other key it pressed here. */
     @Serializable
     @SerialName("inputKeys")

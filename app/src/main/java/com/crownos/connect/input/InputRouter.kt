@@ -9,6 +9,7 @@ import com.crownos.connect.protocol.MediaRole
 import com.crownos.connect.protocol.PeerCommand
 import com.crownos.connect.runtime.LltsRuntime
 import com.crownos.connect.service.ServiceFeature
+import com.crownos.connect.unicursor.CursorHandoff
 import com.crownos.connect.unicursor.SharedCursor
 import com.crownos.connect.util.Letterbox
 import com.crownos.connect.util.ScreenGeometry
@@ -16,7 +17,6 @@ import com.crownos.connect.util.ScreenPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -26,22 +26,31 @@ class InputRouter @Inject constructor(
     private val injectors: InputInjectors,
     private val cursor: SharedCursor,
     private val screen: ScreenGeometry,
+    private val thread: InputThread,
+    private val handoff: CursorHandoff,
 ) : ServiceFeature, PeerCommandHandler {
     private class MirrorControl(val frameWidth: Int, val frameHeight: Int) {
         val keys = KeyStateTracker()
         var pointer = ScreenPoint(0f, 0f)
     }
 
-    private val mirrors = ConcurrentHashMap<String, MirrorControl>()
+    private val mirrors = HashMap<String, MirrorControl>()
     private var job: Job? = null
 
     override fun start(scope: CoroutineScope) {
         if (job != null) return
-        job = scope.launch {
+        job = scope.launch(thread.dispatcher) {
+            launch {
+                runtime.inputEvents.collect { event ->
+                    when (event) {
+                        is LltsEvent.Input -> route(event.peer, event.events.mapNotNull(InputEvent::parse))
+                        is LltsEvent.InputKeys -> releaseStaleKeys(event.peer, event.pressed)
+                        else -> Unit
+                    }
+                }
+            }
             runtime.events.collect { event ->
                 when (event) {
-                    is LltsEvent.Input -> route(event.peer, event.events.mapNotNull(InputEvent::parse))
-                    is LltsEvent.InputKeys -> releaseStaleKeys(event.peer, event.pressed)
                     is LltsEvent.MediaStart -> trackMirror(event)
                     is LltsEvent.MediaStop -> if (event.feature == Feature.Mirror.name) mirrors.remove(event.peer)
                     is LltsEvent.DeviceConnected -> if (!event.connected) forget(event.peer)
@@ -54,17 +63,20 @@ class InputRouter @Inject constructor(
     override fun stop() {
         job?.cancel()
         job = null
-        mirrors.clear()
-        cursor.release()
+        thread.post {
+            mirrors.clear()
+            cursor.release()
+        }
     }
 
     override fun handle(peer: String, command: PeerCommand): Boolean = when (command) {
         is PeerCommand.UnicursorEnter -> {
-            cursor.enter(peer, command.edge, command.position)
+            thread.post { cursor.enter(peer, command.edge, command.position) }
             true
         }
         is PeerCommand.UnicursorLeave -> {
-            cursor.releaseIfHeldBy(peer)
+            thread.post { cursor.releaseIfHeldBy(peer) }
+            handoff.handedBack(peer)
             true
         }
         else -> false

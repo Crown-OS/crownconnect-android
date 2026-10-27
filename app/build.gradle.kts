@@ -59,8 +59,8 @@ android {
         jniLibs { useLegacyPackaging = false }
     }
 
-    // Only needed to cross-compile llts-android (`-Pllts.cargoNdk=true`); arm64 only, since every
-    // device CrownConnect targets is arm64 and each extra ABI is another full engine build.
+    // Only needed to cross-compile the Rust engines (`-Pllts.cargoNdk=true`); arm64 only, since
+    // every device CrownConnect targets is arm64 and each extra ABI is another full engine build.
     ndkVersion = providers.gradleProperty("llts.ndkVersion").getOrElse("27.2.12479018")
 }
 
@@ -71,26 +71,23 @@ kotlin {
 }
 
 /**
- * Cross-compiles the llts engine (`llts-protocol/crates/llts-android`) into jniLibs.
+ * Cross-compiles one of the app's Rust engines into jniLibs: llts (`llts-protocol`) or ffsp
+ * (`fileshare/rust`).
  *
  * Off by default so the app builds without an NDK or a Rust toolchain; `just android` in
- * llts-protocol drops a prebuilt `.so` into `src/main/jniLibs` instead. Use one or the other, so
- * it is clear which build gets packaged. A task type of its own rather than a bare `Exec`, so the
- * configuration cache holds: the command never reaches back into the project.
+ * llts-protocol and `cargo ndk` in fileshare/rust drop prebuilt libraries into
+ * `src/main/jniLibs` instead. Use one or the other, so it is clear which build gets packaged. A
+ * task type of its own rather than a bare `Exec`, so the configuration cache holds: the command
+ * never reaches back into the project.
  */
 @CacheableTask
 abstract class CargoNdkBuild : DefaultTask() {
-    @get:InputDirectory
+    @get:InputFiles
     @get:PathSensitive(PathSensitivity.RELATIVE)
-    abstract val crates: DirectoryProperty
+    abstract val sources: ConfigurableFileCollection
 
-    @get:InputFile
-    @get:PathSensitive(PathSensitivity.RELATIVE)
-    abstract val manifest: RegularFileProperty
-
-    @get:InputFile
-    @get:PathSensitive(PathSensitivity.RELATIVE)
-    abstract val lockfile: RegularFileProperty
+    @get:Input
+    abstract val cargoArguments: ListProperty<String>
 
     @get:Input
     abstract val abi: Property<String>
@@ -116,11 +113,13 @@ abstract class CargoNdkBuild : DefaultTask() {
             workingDir = workspace.get().asFile
             environment("ANDROID_NDK_HOME", ndkDirectory.get())
             commandLine(
-                "cargo", "ndk",
-                "--target", abi.get(),
-                "--platform", apiLevel.get(),
-                "--output-dir", outputDirectory.get().asFile.absolutePath,
-                "build", "--profile", "android", "-p", "llts-android",
+                listOf(
+                    "cargo", "ndk",
+                    "--target", abi.get(),
+                    "--platform", apiLevel.get(),
+                    "--output-dir", outputDirectory.get().asFile.absolutePath,
+                    "build",
+                ) + cargoArguments.get(),
             )
         }
     }
@@ -130,21 +129,43 @@ if (providers.gradleProperty("llts.cargoNdk").map(String::toBoolean).getOrElse(f
     val llts = layout.projectDirectory.dir(
         providers.gradleProperty("llts.workspace").getOrElse("../../llts-protocol"),
     )
-    val cargoNdk = tasks.register<CargoNdkBuild>("cargoNdkBuild") {
-        group = "build"
-        description = "Cross-compiles the llts engine for Android"
-        crates.set(llts.dir("crates"))
-        manifest.set(llts.file("Cargo.toml"))
-        lockfile.set(llts.file("Cargo.lock"))
-        workspace.set(llts)
-        ndkDirectory.set(androidComponents.sdkComponents.ndkDirectory.map { it.asFile.absolutePath })
-        abi.set("arm64-v8a")
-        apiLevel.set("29")
-        outputDirectory.set(layout.buildDirectory.dir("rustJniLibs"))
-    }
+    val fileshare = layout.projectDirectory.dir(
+        providers.gradleProperty("ffsp.workspace").getOrElse("../../fileshare/rust"),
+    )
+    val ffspProtocol = layout.projectDirectory.dir(
+        providers.gradleProperty("ffsp.protocol").getOrElse("../../ffsp-protocol"),
+    )
+    fun registerEngine(name: String, workspaceDirectory: Directory, arguments: List<String>, inputs: List<Any>) =
+        tasks.register<CargoNdkBuild>("cargoNdkBuild$name") {
+            group = "build"
+            description = "Cross-compiles the $name engine for Android"
+            sources.from(inputs)
+            cargoArguments.set(arguments)
+            workspace.set(workspaceDirectory)
+            ndkDirectory.set(androidComponents.sdkComponents.ndkDirectory.map { it.asFile.absolutePath })
+            abi.set("arm64-v8a")
+            apiLevel.set("29")
+            outputDirectory.set(layout.buildDirectory.dir("rustJniLibs/${name.lowercase()}"))
+        }
+    val engines = listOf(
+        registerEngine(
+            "Llts",
+            llts,
+            listOf("--profile", "android", "-p", "llts-android"),
+            listOf(llts.dir("crates"), llts.file("Cargo.toml"), llts.file("Cargo.lock")),
+        ),
+        registerEngine(
+            "Ffsp",
+            fileshare,
+            listOf("--release"),
+            listOf(fileshare.dir("src"), fileshare.file("Cargo.toml"), ffspProtocol.dir("src")),
+        ),
+    )
     androidComponents {
         onVariants { variant ->
-            variant.sources.jniLibs?.addGeneratedSourceDirectory(cargoNdk, CargoNdkBuild::outputDirectory)
+            engines.forEach { engine ->
+                variant.sources.jniLibs?.addGeneratedSourceDirectory(engine, CargoNdkBuild::outputDirectory)
+            }
         }
     }
 }

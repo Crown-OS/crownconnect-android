@@ -11,7 +11,7 @@ val Feature.info: FeatureInfo
         Feature.Camera -> FeatureInfo("Webcam", "Use this phone's camera as a webcam", CrownIcons.Webcam)
         Feature.Mic -> FeatureInfo("Microphone", "Use this phone as a microphone", CrownIcons.Mic)
         Feature.Monitor -> FeatureInfo("Second display", "Extend the computer's desktop onto this screen", CrownIcons.Monitor)
-        Feature.Unicursor -> FeatureInfo("Shared cursor", "Move the computer's pointer onto this phone", CrownIcons.MousePointer2)
+        Feature.Unicursor -> FeatureInfo("Shared cursor", "One pointer and keyboard across both screens", CrownIcons.MousePointer2)
         Feature.Calls -> FeatureInfo("Calls", "Answer and place phone calls from the computer", CrownIcons.Phone)
         Feature.Clipboard -> FeatureInfo("Clipboard", "Copy on one device, paste on the other", CrownIcons.Clipboard)
         Feature.Notifications -> FeatureInfo("Notifications", "Show and reply to this phone's notifications", CrownIcons.Bell)

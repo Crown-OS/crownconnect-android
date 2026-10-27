@@ -14,6 +14,7 @@ object ServiceNotifications {
     const val CONNECTION_ID = 1
     const val PAIRING_ID = 2
     private const val PROMPT_ID = 3
+    private const val STOP_SHARING_REQUEST = 5
     private const val CONNECTION_CHANNEL = "connection"
     const val ALERT_CHANNEL = "alerts"
 
@@ -41,22 +42,26 @@ object ServiceNotifications {
         PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
     )
 
-    fun connection(context: Context, connectedNames: List<String>): Notification {
-        val text = when (connectedNames.size) {
-            0 -> "Waiting for your computers"
-            1 -> "Connected to ${connectedNames.first()}"
-            else -> "Connected to ${connectedNames.size} devices"
-        }
-        return NotificationCompat.Builder(context, CONNECTION_CHANNEL)
+    fun connection(context: Context, status: ConnectionStatus): Notification {
+        val builder = NotificationCompat.Builder(context, CONNECTION_CHANNEL)
             .setSmallIcon(smallIcon)
-            .setContentTitle("CrownConnect")
-            .setContentText(text)
+            .setContentTitle(status.title)
+            .setContentText(status.text)
             .setOngoing(true)
             .setSilent(true)
             .setCategory(NotificationCompat.CATEGORY_SERVICE)
             .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
             .setContentIntent(openAppIntent(context))
-            .build()
+        if (status.sharing.isNotEmpty()) {
+            val stop = PendingIntent.getService(
+                context,
+                STOP_SHARING_REQUEST,
+                Intent(context, ConnectionService::class.java).setAction(ConnectionService.ACTION_STOP_SHARING),
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+            )
+            builder.addAction(0, "Stop sharing", stop)
+        }
+        return builder.build()
     }
 
     fun prompt(context: Context, title: String, text: String, target: Intent) {

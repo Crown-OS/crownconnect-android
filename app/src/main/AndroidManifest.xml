@@ -71,6 +71,25 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".media.RemoteDisplayActivity"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden|navigation|uiMode|density"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:launchMode="singleTop"
+            android:resizeableActivity="true"
+            android:taskAffinity="com.crownos.connect.display"
+            android:theme="@style/Theme.CrownConnect.Fullscreen"
+            android:windowSoftInputMode="adjustNothing" />
+
+        <activity
+            android:name=".media.ProjectionConsentActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:noHistory="true"
+            android:taskAffinity="com.crownos.connect.consent"
+            android:theme="@style/Theme.CrownConnect.Transparent" />
+
         <service
             android:name=".service.ConnectionService"
             android:exported="false"
@@ -98,6 +117,15 @@
                 android:name="android.accessibilityservice"
                 android:resource="@xml/accessibility_service" />
         </service>
+
+        <receiver
+            android:name=".service.BootReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
 
         <provider
             android:name="rikka.shizuku.ShizukuProvider"

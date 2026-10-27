@@ -20,6 +20,9 @@ class ScreenGeometry @Inject constructor(@ApplicationContext context: Context) {
     var size: ScreenSize = measure()
         private set
 
+    val peakRefreshRate: Float
+        get() = displays.getDisplay(Display.DEFAULT_DISPLAY)?.supportedModes?.maxOfOrNull { it.refreshRate } ?: 0f
+
     private val listener = object : DisplayManager.DisplayListener {
         override fun onDisplayChanged(displayId: Int) {
             if (displayId == Display.DEFAULT_DISPLAY) size = measure()

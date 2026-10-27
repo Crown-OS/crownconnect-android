@@ -14,5 +14,16 @@ object CodecProbe {
             .ifEmpty { listOf(VideoCodec.H264) }
     }
 
+    fun encodesSize(width: Int, height: Int): Boolean =
+        MediaCodecList(MediaCodecList.REGULAR_CODECS).codecInfos
+            .filter { it.isEncoder && it.isHardwareAccelerated }
+            .any { info ->
+                preference.any { codec ->
+                    info.handles(codec) && runCatching {
+                        info.getCapabilitiesForType(codec.mime).videoCapabilities.isSizeSupported(width, height)
+                    }.getOrDefault(false)
+                }
+            }
+
     private fun MediaCodecInfo.handles(codec: VideoCodec) = supportedTypes.any { it.equals(codec.mime, ignoreCase = true) }
 }
